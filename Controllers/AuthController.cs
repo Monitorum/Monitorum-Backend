@@ -29,7 +29,7 @@ namespace Monitorum.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == Int32.Parse(userId!));
 
-            if (user == null) return BadRequest(new { message = "User not found" });
+            if (user == null) return BadRequest(new { message = "   User not found" });
 
             return Ok(new UserResponseDto
             {
