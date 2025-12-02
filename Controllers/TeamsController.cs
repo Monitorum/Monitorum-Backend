@@ -1,12 +1,7 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Monitorum.Data;
 using Monitorum.Models;
-using Monitorum.Services;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Monitorum.Controllers
 {
@@ -29,11 +24,11 @@ namespace Monitorum.Controllers
         }
         //[Authorize]
         [HttpPost]
-        public async Task<IActionResult> CreateTeam()
+        public async Task<IActionResult> CreateTeam(TeamDto request)
         {
             await _context.Teams.AddAsync(new Team 
             {
-                Name = "bomji"   
+                Name = request.Teamname   
             }
             );
             await _context.SaveChangesAsync();
@@ -44,12 +39,17 @@ namespace Monitorum.Controllers
         public async Task<IActionResult> DeleteTeam(int id)
         {
             var Team = await _context.Teams.FindAsync(id);
-            if (Team != null)
+            if (Team == null)
             {
-                _context.Teams.Remove(Team!);
-                await _context.SaveChangesAsync();
+                return BadRequest();
             }
+            _context.Teams.Remove(Team!);
+            await _context.SaveChangesAsync();
             return Ok();
         }
     };
+    public class TeamDto
+    {
+        public string Teamname { get; set; } = string.Empty;
+    }
 }
