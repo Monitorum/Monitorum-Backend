@@ -45,19 +45,31 @@ namespace Monitorum.Controllers
         public async Task<IActionResult> Create([FromBody] ProjectCreateDto request)
         {
             var username = User.Identity?.Name;
-            var user = await _dbContext.Users.SingleOrDefaultAsync(u => u.Username == username);
+            var user = await _dbContext.Users.Include("Members").SingleOrDefaultAsync(u => u.Username == username);
             
+
+
             if (user == null)
                 return Unauthorized(new { message = "User not found" });
+
+            if (request.Type == ProjectType.Team && request.TeamId == null)
+                return BadRequest(new { message = "In case Team Project field teamId can not be null" });
+
+            if (request.Type == ProjectType.Team)
+            {
+                if (!user.IsTeamManager((int)request.TeamId))
+                    return Unauthorized();
+
+            }
 
             var project = new Project
             {
                 Name = request.Name,
                 Description = request.Description,
-                OwnerId = user.Id,
+                Type = request.Type,
+                OwnerId = request.Type == ProjectType.Private ? user.Id : (int)request.TeamId,
             };
 
-            //user.Projects.Add(project);
             _dbContext.Projects.Add(project);
 
             await _dbContext.SaveChangesAsync();
@@ -70,6 +82,8 @@ namespace Monitorum.Controllers
                     project.Id,
                     project.Name,
                     project.Description,
+                    project.Type,
+                    project.OwnerId,
                 },
             });
         }
@@ -131,6 +145,8 @@ namespace Monitorum.Controllers
     {
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public ProjectType Type { get; set; }
+        public int? TeamId { get; set; }
     }
 
     public class ProjectUpdateDto

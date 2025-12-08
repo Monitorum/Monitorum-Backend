@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Monitorum.Migrations
 {
     [DbContext(typeof(MonitorumDbContext))]
-    [Migration("20251123124251_ProjectsCreate")]
-    partial class ProjectsCreate
+    [Migration("20251202194357_Initial2")]
+    partial class Initial2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,32 @@ namespace Monitorum.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Monitorum.Models.Member", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Members");
+                });
 
             modelBuilder.Entity("Monitorum.Models.Project", b =>
                 {
@@ -49,9 +75,10 @@ namespace Monitorum.Migrations
                     b.Property<int>("OwnerId")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
-                    b.HasIndex("OwnerId");
+                    b.HasKey("Id");
 
                     b.ToTable("Projects");
                 });
@@ -68,11 +95,13 @@ namespace Monitorum.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("DueDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ExecutorId")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
@@ -89,6 +118,23 @@ namespace Monitorum.Migrations
                     b.HasIndex("ProjectId");
 
                     b.ToTable("ProjectTasks");
+                });
+
+            modelBuilder.Entity("Monitorum.Models.Team", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Teams");
                 });
 
             modelBuilder.Entity("Monitorum.Models.User", b =>
@@ -116,15 +162,21 @@ namespace Monitorum.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Monitorum.Models.Project", b =>
+            modelBuilder.Entity("Monitorum.Models.Member", b =>
                 {
-                    b.HasOne("Monitorum.Models.User", "Owner")
-                        .WithMany("Projects")
-                        .HasForeignKey("OwnerId")
+                    b.HasOne("Monitorum.Models.Team", "Team")
+                        .WithMany("Members")
+                        .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Owner");
+                    b.HasOne("Monitorum.Models.User", null)
+                        .WithMany("Members")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("Monitorum.Models.ProjectTask", b =>
@@ -141,9 +193,14 @@ namespace Monitorum.Migrations
                     b.Navigation("Tasks");
                 });
 
+            modelBuilder.Entity("Monitorum.Models.Team", b =>
+                {
+                    b.Navigation("Members");
+                });
+
             modelBuilder.Entity("Monitorum.Models.User", b =>
                 {
-                    b.Navigation("Projects");
+                    b.Navigation("Members");
                 });
 #pragma warning restore 612, 618
         }

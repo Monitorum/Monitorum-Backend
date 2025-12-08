@@ -8,6 +8,7 @@
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? DueDate { get; set; }
         public bool IsCompleted { get; set; } = false;
+        public int? ExecutorId { get; set; }
         public int ProjectId { get; set; }
     }
 }
