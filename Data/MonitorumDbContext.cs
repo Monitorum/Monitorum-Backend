@@ -10,5 +10,7 @@ namespace Monitorum.Data
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Project> Projects { get; set; } = null!;
         public DbSet<ProjectTask> ProjectTasks { get; set; } = null!;
+        public DbSet<Team> Teams { get; set; } = null!;
+        public DbSet<Member> Members { get; set; } = null!;
     }
 }
